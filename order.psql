@@ -1,0 +1,209 @@
+/*Create Table statements*/
+CREATE TABLE "CUSTOMER" (
+                            "VENDOR_ID" varchar(6) unique NOT NULL ,
+                            PRIMARY KEY ("VENDOR_ID")
+);
+ALTER table "CUSTOMER"add column vendor_name varchar(30);
+ALTER table "CUSTOMER"add column Address varchar(60);
+ALTER table "CUSTOMER"add column Memo varchar(60);
+ALTER table "CUSTOMER"add column status varchar(5);
+
+
+CREATE TABLE "Planner" (
+
+                           "PlAN_ID" VARCHAR(6) NOT NULL UNIQUE ,
+                           PRIMARY KEY ("PlAN_ID")
+);
+
+CREATE TABLE "CARRIER" (
+                           "CARRIER_ID" varchar(6) not null unique,
+                           PRIMARY KEY ("CARRIER_ID")
+);
+ALTER table "CARRIER" add column    carrier_name varchar (20);
+ALTER table "CARRIER" add  column address varchar(60);
+ALTER table "CARRIER" add  column memo varchar(60);
+ALTER table "CARRIER" add  column status varchar(5);
+ALTER table "CARRIER" add  column carrier_type varchar(10);
+ALTER table "CARRIER" add  column division varchar(20);
+
+CREATE TABLE "LOAD" (
+                        "LOAD_ID" varchar(6) unique,
+                        "CARRIER_ID"varchar(6) UNIQUE,
+                        PRIMARY KEY ("LOAD_ID")
+
+);
+Alter table "LOAD" add column Carrier_ID varchar(6) unique ;
+ Alter table "LOAD" add FOREIGN KEY(carrier_id)
+    REFERENCES "CARRIER"("CARRIER_ID");
+CREATE TABLE "PURCHASE_ORDERS" (
+                                   "SHIPMENT_TRACKING_NO" varchar(10) NOT NULL unique ,
+                                   "VENDOR_ID" varchar(6) not null,
+                                   PRIMARY KEY ("SHIPMENT_TRACKING_NO"),
+                                   CONSTRAINT fk_ORDERS
+                                       FOREIGN KEY("VENDOR_ID")
+                                           REFERENCES "CUSTOMER"("VENDOR_ID")
+);
+
+CREATE TABLE "TRANSPORT_ORDERS" (
+                                    "SHIPMENT_TRACKING_NO" varchar(10) not null unique,
+                                    "VENDOR_ID" varchar(6) not null,
+                                    "PLAN_ID" varchar(6),
+                                    "PALLETSTACKS" int not null ,
+                                    "LOAD_ID" varchar(6),
+                                    "SHIPMENT_ID" varchar(10) not null unique ,
+                                    PRIMARY KEY ("SHIPMENT_ID"),
+                                    CONSTRAINT fk_TRANSPORT_ORDERS
+                                        FOREIGN KEY("SHIPMENT_ID")
+                                            REFERENCES "PURCHASE_ORDERS"("SHIPMENT_TRACKING_NO"),
+                                    CONSTRAINT fk_VENDOR
+                                        FOREIGN KEY("VENDOR_ID")
+                                            REFERENCES "CUSTOMER"("VENDOR_ID"),
+                                    CONSTRAINT fk_LOAD
+                                        FOREIGN KEY("LOAD_ID")
+                                            REFERENCES "LOAD"("LOAD_ID"),
+                                    CONSTRAINT fk_PLAN
+                                        FOREIGN KEY("PLAN_ID")
+                                            REFERENCES "Planner"("PlAN_ID")
+
+
+);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN ORIGIN_ADDRESS varchar(10);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN DESTINATION_ADDRESS varchar(10);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN COMMODITY varchar(20);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN PICK_UP_FROM timestamp;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN PICK_UP_TO TIMESTAMP;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN DELIVERY_FROM timestamp;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN DELIVERY_TO TIMESTAMP;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN WEIGHT INT;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN SIZE INT;
+ALTER TABLE "TRANSPORT_ORDERS" DROP COLUMN SIZE;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN VOLUME INT;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN STATUS VARCHAR(20);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN pieces int;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN shipment_number varchar(6);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN Created_by varchar(5);
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN Created timestamp;
+ALTER TABLE "TRANSPORT_ORDERS" ADD  COLUMN updated timestamp;
+
+CREATE TABLE "SHIPMENT_LEGS" (
+                                 "SHIPMENT_LEG_ID" varchar(10) not null unique ,
+                                 "SHIPMENT_ID" varchar(8) not null  ,
+                                 "VENDOR_ID" varchar(6) not null,
+                                 "LOAD_ID" varchar(6),
+                                 "CARRIER_ID" varchar(6) ,
+                                 PRIMARY KEY ("SHIPMENT_LEG_ID"),
+                                 CONSTRAINT fk_shipment
+                                     FOREIGN KEY("SHIPMENT_ID")
+                                         REFERENCES "TRANSPORT_ORDERS"("SHIPMENT_ID"),
+                                 CONSTRAINT fk_CUSTOMER
+                                     FOREIGN KEY("VENDOR_ID")
+                                         REFERENCES "CUSTOMER" ("VENDOR_ID"),
+                                 CONSTRAINT fk_LOAD
+                                     FOREIGN KEY("LOAD_ID")
+                                         REFERENCES "LOAD" ("LOAD_ID"),
+                                 CONSTRAINT fk_CARRIER
+                                     FOREIGN KEY("CARRIER_ID")
+                                         REFERENCES "CARRIER"("CARRIER_ID")
+);
+ALTER TABLE "SHIPMENT_LEGS"
+ ADD CONSTRAINT fk_shipment
+    FOREIGN KEY("SHIPMENT_ID")
+    REFERENCES "TRANSPORT_ORDERS"("SHIPMENT_ID");
+alter table "SHIPMENT_LEGS" ADD COLUMN "SHIPMENT_ID" varchar(10);
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN ORIGIN_ADDRESS varchar(60);
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN destination_ADDRESS varchar(60);
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN COMMODITY varchar(60);
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN PICK_UP_from timestamp;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN PICK_UP_to timestamp;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN delivery_from timestamp;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN delivery_to timestamp;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN WEIGHT INT;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN SIZE INT;
+ALTER TABLE "SHIPMENT_LEGS" DROP COLUMN SIZE;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN VOLUME INT;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN STATUS VARCHAR(20);
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN pieces int;
+ALTER TABLE "SHIPMENT_LEGS" ADD  COLUMN palletstacks int;
+CREATE TABLE "CARRIER_Visibility" (
+                                      "CARRIER_VISIBILITY_ID" varchar(10) unique ,
+                                      "CARRIER_ID" varchar(6) not null ,
+                                      "LOAD_ID" varchar(6),
+                                      PRIMARY KEY ("CARRIER_VISIBILITY_ID"),
+                                      CONSTRAINT fk_CARRIER_VISIBILITY
+                                          FOREIGN KEY("CARRIER_ID")
+                                              REFERENCES "CARRIER"("CARRIER_ID"),
+                                      CONSTRAINT fk_CARRIER_VISIBILITY_lOAD
+                                          FOREIGN KEY("LOAD_ID")
+                                              REFERENCES "LOAD"("LOAD_ID")
+);
+
+CREATE TABLE "Customer_Visibility" (
+                                       "CUSTOMER_VISIBILITY_ID" varchar(6) unique,
+                                       "VENDOR_ID" varchar(6) not null,
+                                       PRIMARY KEY ("CUSTOMER_VISIBILITY_ID"),
+                                       CONSTRAINT fk_CUSTOMER_VISIBILITY
+                                           FOREIGN KEY("VENDOR_ID")
+                                               REFERENCES "CUSTOMER"("VENDOR_ID")
+);
+
+CREATE TABLE "Planner_Visibility" (
+                                      "PLANNER_VISIBILITY_ID" varchar(6) not null UNIQUE ,
+
+                                      "PLAN_ID" varchar(6) NOT NULL,
+                                      PRIMARY KEY ("PLANNER_VISIBILITY_ID"),
+
+                                      CONSTRAINT fk_PLANNER_VISIBILITY_ORDERS
+                                          FOREIGN KEY("PLAN_ID")
+                                              REFERENCES "Planner" ("PlAN_ID")
+
+);
+CREATE TABLE TRIPS
+(
+    TRIP_ID                     VARCHAR(6) NOT NULL UNIQUE,
+    CARRIER_ID                  VARCHAR(6) NOT NULL,
+    "ORIGIN_LOCATION_NAME"      VARCHAR(80),
+    "ORIGIN_ADDRESS"            VARCHAR(80),
+    "DESTINATION_ADDRESS"       VARCHAR(80),
+    "DESTINATION_LOCATION_NAME" VARCHAR(80)
+);
+ALTER TABLE "CARRIER" drop COLUMN TRIP_ID  ;
+ALTER TABLE "CARRIER" ADD COLUMN TRIP_ID varchar(6)  unique ;
+
+alter table trips add constraint fk_carrier
+    foreign key ("carrier_id")
+        references "CARRIER" ("CARRIER_ID");
+alter table "TRANSPORT_ORDERS" drop column destination_address;
+alter table "TRANSPORT_ORDERS" drop column origin_address;
+alter table "TRANSPORT_ORDERS" add column destination_address varchar (80);
+alter table "TRANSPORT_ORDERS" add column origin_address varchar (80);
+alter table "TRANSPORT_ORDERS" drop column volume;
+
+alter table "TRANSPORT_ORDERS" add column volume float;
+alter table "TRANSPORT_ORDERS" drop constraint fk_TRANSPORT_ORDERS;
+alter table "TRANSPORT_ORDERS" add CONSTRAINT fk_TRANSPORT_ORDERS
+    FOREIGN KEY("SHIPMENT_TRACKING_NO")
+        REFERENCES "PURCHASE_ORDERS"("SHIPMENT_TRACKING_NO");
+
+
+/* insert statements*/
+
+insert into "CUSTOMER" values ('674198','7001',	'Ansell International',	'GPO BOX 772H,MELBOURNE,VIC,AUS,3001',	'No');
+insert into "CUSTOMER" values ('674197','7001',	'Ansell International',	'GPO BOX 772H,MELBOURNE,VIC,AUS,3001',	'No');
+insert into "CUSTOMER" values ('674196','7001',	'Ansell International',	'GPO BOX 772H,MELBOURNE,VIC,AUS,3001',	'No');
+insert into "PURCHASE_ORDERS" values ('0102573794','674199');
+insert into "PURCHASE_ORDERS" values ('0102579344','674197');
+insert into "PURCHASE_ORDERS" values ('0102579343','674197');
+insert into "CARRIER" values ('Dyer_o','ABCTRANS','ABC Transport 563 GRAND JUNCTION ROAD,WINGFIELD,SA,AUS,5013',	'Yes',	'Active',	'Road');
+insert into "CARRIER" values ('sarg_o','ABCTRANS','ABC Transport 563 GRAND JUNCTION ROAD,WINGFIELD,SA,AUS,5013',	'Yes',	'Active',	'Road');
+insert into "LOAD" values ('882564','Dyer_o');
+insert into "LOAD" values ('882566','12346');
+insert into "Planner" values ('80200');
+INSERT INTO "TRANSPORT_ORDERS" VALUES ('0102573794','674199','80200','99','882565','WYR0057352','FRESH',494,'PROCESSING','4/7/2021 0:01','4/7/2021 3:59','4/10/2021 0:00','4/10/2021 3:59',444,'726654','*DFT','4/7/2021 19:47', '4/7/2021 15:24','WARREN ROAD,WARNERVALE,NSW,AUS,2259','THE ENTRANCE RD,BATEAU BAY,NSW,AUS,2261',1.999);
+INSERT INTO "TRANSPORT_ORDERS" VALUES ('0102579344','674199','80200','99','882565','WYR0057351','FRESH',494,'PROCESSING','4/7/2021 0:01','4/7/2021 3:59','4/10/2021 0:00','4/10/2021 3:59',444,'726655','*DFT','4/7/2021 19:47', '4/7/2021 15:24','WARREN ROAD,WARNERVALE,NSW,AUS,2259','THE ENTRANCE RD,BATEAU BAY,NSW,AUS,2261',1.999);
+INSERT INTO "TRANSPORT_ORDERS" VALUES ('0102579343','674199','80200','99','882565','WYR0057350','FRESH',494,'PROCESSING','4/7/2021 0:01','4/7/2021 3:59','4/10/2021 0:00','4/10/2021 3:59',444,'726654','*DFT','4/7/2021 19:47', '4/7/2021 15:24','WARREN ROAD,WARNERVALE,NSW,AUS,2259','THE ENTRANCE RD,BATEAU BAY,NSW,AUS,2261',1.999);
+insert into "SHIPMENT_LEGS" values ('A2103459','674199','882565','Dyer_o','WARREN ROAD,WARNERVALE,NSW,AUS,2259','Fresh',494,1.99,'Processing','01/04/2021 00:00','01/04/2021 23:00','01/10/2021 00:00','01/10/2021 23:00',299,99,'THE ENTRANCE RD,BATEAU BAY,NSW,AUS,2261 ','WYR0057351');
+insert into "SHIPMENT_LEGS" values ('A2103455','674199','882565','Dyer_o','WARREN ROAD,WARNERVALE,NSW,AUS,2259','Fresh',494,1.99,'Processing','01/04/2021 00:00','01/04/2021 23:00','01/10/2021 00:00','01/10/2021 23:00',299,99,'THE ENTRANCE RD,BATEAU BAY,NSW,AUS,2261 ','WYR0057352');
+
+
+
+
